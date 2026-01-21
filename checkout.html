@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout & Payment - Ajinkya Web Services</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+body{ font-family:'Inter',sans-serif; margin:0; background:#fdfdfd; color:#000; }
+header { background:#000; color:#fff; display:flex; justify-content:space-between; align-items:center; padding:15px 25px; position:fixed; top:0; width:100%; z-index:1000; box-shadow:0 2px 10px rgba(0,0,0,0.15);}
+header h1{margin:0;font-size:26px;}
+nav.nav-row{ display:flex; align-items:center; gap:20px; flex-wrap:wrap;}
+nav.nav-row a{ color:white; font-weight:bold; padding:6px 12px; border-radius:4px; transition:0.3s;}
+nav.nav-row a:hover{ background:#444; }
+.cart-link{ font-size:18px; position:relative; }
+#cart-count{ position:absolute; top:-8px; right:-10px; background:red; color:#fff; padding:2px 6px; border-radius:50%; font-size:12px; }
+
+.back-btn{ position:fixed; top:90px; left:20px; background:#000; color:#fff; border:none; padding:10px 18px; border-radius:30px; cursor:pointer; z-index:2000; transition: transform 0.3s ease, background 0.3s ease;}
+.back-btn:hover{ transform:scale(1.1); background:#444; }
+
+.page-heading{ margin-top:130px; text-align:center; font-size:28px; font-weight:bold; color:#111; }
+
+.container{ max-width:900px; margin:40px auto; display:flex; flex-wrap:wrap; gap:20px; padding:0 15px; }
+.checkout-form, .order-summary{ flex:1 1 400px; background:#fff; padding:25px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1); }
+
+.checkout-form h2, .order-summary h2{ margin-top:0; margin-bottom:20px; font-size:22px; }
+.checkout-form input, .checkout-form select{ width:100%; padding:10px 12px; margin-bottom:15px; border:1px solid #ccc; border-radius:6px; font-size:16px; }
+.payment-method{ margin-bottom:15px; }
+.payment-method label{ margin-right:15px; font-weight:bold; cursor:pointer; }
+
+.submit-btn, .invoice-btn{ width:100%; padding:14px; background:#000; color:#fff; font-size:18px; font-weight:bold; border:none; border-radius:8px; cursor:pointer; transition:0.3s; margin-top:10px;}
+.submit-btn:hover, .invoice-btn:hover{ background:#444; }
+.invoice-btn{ display:none; }
+
+.payment-details{ background:#f7f7f7; padding:15px; border-radius:8px; margin-top:10px; display:none; text-align:center; }
+
+.payment-details img{ max-width:200px; margin:10px 0; }
+
+.order-item{ display:flex; justify-content:space-between; margin-bottom:12px; }
+.order-item span{ font-weight:600; }
+.total{ text-align:right; font-weight:bold; font-size:18px; margin-top:10px; }
+
+footer{ background:#000; color:#fff; text-align:center; padding:20px; margin-top:40px; font-size:14px; }
+
+@media(max-width:900px){ .container{flex-direction:column;} }
+</style>
+</head>
+<body>
+
+<button class="back-btn" onclick="history.back()">← Back</button>
+
+<header>
+  <h1>Ajinkya Web Services</h1>
+  <nav class="nav-row">
+    <a href="cart.html" class="cart-link">🛒 <span id="cart-count">0</span></a>
+    <a href="index.html">Home</a>
+    <a href="services.html">Services</a>
+    <a href="contact.html">Contact</a>
+    <a href="policy.html">Privacy</a>
+  </nav>
+</header>
+
+<h1 class="page-heading">Checkout & Payment</h1>
+
+<div class="container">
+  <div class="checkout-form">
+    <h2>Billing Details</h2>
+    <input type="text" id="name" placeholder="Full Name" required>
+    <input type="email" id="email" placeholder="Email Address" required>
+    <input type="tel" id="phone" placeholder="Phone Number" required>
+    <input type="text" id="address" placeholder="Full Address" required>
+
+    <h2>Payment Method</h2>
+    <div class="payment-method">
+      <label><input type="radio" name="payment" value="Credit/Debit Card" checked> Credit/Debit Card</label>
+      <label><input type="radio" name="payment" value="UPI"> UPI</label>
+      <label><input type="radio" name="payment" value="Net Banking"> Net Banking</label>
+    </div>
+
+    <!-- Dynamic Payment Details -->
+    <div class="payment-details" id="cardDetails">
+      <input type="text" id="cardNumber" placeholder="Card Number">
+      <input type="text" id="expiry" placeholder="MM/YY">
+      <input type="text" id="cvv" placeholder="CVV">
+    </div>
+    <div class="payment-details" id="upiDetails">
+      <p>Scan this QR to pay via UPI:</p>
+     <img src="upi-qr.jpg" alt="UPI QR Code">
+      <p>UPI ID: 7822901453@ptsbi</p>
+      <p>Paytm / GPay / PhonePe / BHIM</p>
+    </div>
+    <div class="payment-details" id="netBankDetails">
+      <p>Choose your Bank:</p>
+      <ul>
+        <li>HDFC Bank</li>
+        <li>ICICI Bank</li>
+        <li>State Bank of India</li>
+        <li>Other Netbanking Apps</li>
+      </ul>
+    </div>
+
+    <button class="submit-btn" onclick="submitPayment()">Pay Now</button>
+    <button class="invoice-btn" id="invoiceBtn" onclick="downloadInvoice()">Download Invoice PDF</button>
+  </div>
+
+  <div class="order-summary">
+    <h2>Order Summary</h2>
+    <div id="summaryItems"></div>
+    <div class="total" id="summaryTotal">Total: ₹0</div>
+  </div>
+</div>
+
+<footer>© 2026 Ajinkya Web Services</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const servicePrices = { personal:6000,business:14999,ecommerce:24999,landing:4999,custom:19999,redesign:12999 };
+let cartData = JSON.parse(localStorage.getItem("cartData")) || {};
+const cartCountElem = document.querySelector("#cart-count");
+function updateCartCount(){ const totalItems = Object.values(cartData).reduce((sum, qty)=>sum+qty,0); cartCountElem.innerText=totalItems;}
+updateCartCount();
+
+function renderSummary(){
+  const summaryItems = document.getElementById("summaryItems");
+  const summaryTotal = document.getElementById("summaryTotal");
+  summaryItems.innerHTML="";
+  let total=0;
+  for(let service in cartData){
+    const qty = cartData[service];
+    const price = servicePrices[service]||0;
+    const subtotal = qty*price;
+    total+=subtotal;
+    const div=document.createElement("div");
+    div.className="order-item";
+    div.innerHTML=`<span>${service.charAt(0).toUpperCase()+service.slice(1)} Website × ${qty}</span><span>₹${subtotal}</span>`;
+    summaryItems.appendChild(div);
+  }
+  summaryTotal.innerText=`Total: ₹${total}`;
+}
+renderSummary();
+
+// Show payment fields dynamically
+const paymentRadios = document.querySelectorAll('input[name="payment"]');
+paymentRadios.forEach(radio=>{
+  radio.addEventListener('change',()=>showPaymentFields(radio.value));
+});
+function showPaymentFields(method){
+  document.getElementById('cardDetails').style.display='none';
+  document.getElementById('upiDetails').style.display='none';
+  document.getElementById('netBankDetails').style.display='none';
+  if(method==='Credit/Debit Card') document.getElementById('cardDetails').style.display='block';
+  else if(method==='UPI') document.getElementById('upiDetails').style.display='block';
+  else if(method==='Net Banking') document.getElementById('netBankDetails').style.display='block';
+}
+showPaymentFields('Credit/Debit Card'); // default
+
+function submitPayment(){
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const address = document.getElementById("address").value.trim();
+  const payment = document.querySelector('input[name="payment"]:checked').value;
+  if(!name||!email||!phone||!address){ alert("Please fill all details!"); return; }
+
+  alert(`Payment Recorded!\nThank you, ${name}.\nPayment Method: ${payment}`);
+  document.getElementById("invoiceBtn").style.display="block";
+}
+
+function downloadInvoice(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const phone = "7822901453"; // your actual phone number
+  const payment = document.querySelector('input[name="payment"]:checked').value;
+  let y=20;
+  doc.setFontSize(16); doc.text("Ajinkya Web Services",105,y,null,null,"center"); y+=10;
+  doc.setFontSize(10); doc.text("Email: ajinkyabest5@gmail.com",105,y,null,null,"center"); y+=6;
+  doc.text(`Phone: ${phone}`,105,y,null,null,"center"); y+=10;
+  doc.setFontSize(12); doc.text("INVOICE",105,y,null,null,"center"); y+=10;
+  doc.setFontSize(10); doc.text(`Customer Name: ${name}`,14,y); y+=6;
+  doc.text(`Email: ${email}`,14,y); y+=6; doc.text(`Phone: ${phone}`,14,y); y+=10;
+  doc.text("Order Details:",14,y); y+=6;
+  let total=0;
+  for(let service in cartData){ const qty=cartData[service]; const price=servicePrices[service]||0; const subtotal=qty*price; total+=subtotal; doc.text(`${service.charAt(0).toUpperCase()+service.slice(1)} Website × ${qty} - ₹${subtotal}`,14,y); y+=6;}
+  y+=2; doc.text(`Total Amount: ₹${total}`,14,y); y+=6;
+  doc.text(`Payment Method: ${payment}`,14,y); y+=10;
+  doc.text("Our Policy & Benefits:",14,y); y+=6;
+  doc.text("- Fully responsive professional websites",14,y); y+=6;
+  doc.text("- Lifetime support & maintenance",14,y); y+=6;
+  doc.text("- 100% satisfaction guarantee",14,y); y+=6;
+  doc.text("- Benefits: Easy, professional online presence",14,y); y+=15;
+  // Add QR image to invoice
+  const qrImg = new Image();
+  qrImg.src = "71b229a5-aa5a-4948-951d-25a8ef8dcc6c.png";
+  qrImg.onload = function(){
+    doc.addImage(qrImg, 'PNG', 14, y, 50, 50);
+    doc.save(`Invoice_${name}.pdf`);
+  }
+}
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
